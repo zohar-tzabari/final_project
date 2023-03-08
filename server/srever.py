@@ -1,23 +1,35 @@
-from fastapi import FastAPI
+import json
+
+from starlette.middleware import Middleware
+from fastapi import FastAPI, Request, WebSocket, File, UploadFile, Form
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 from pydantic import BaseModel
 
-# Define a Pydantic model for your input data
-class Item(BaseModel):
-    message: str
+middleware = [
+    Middleware(CORSMiddleware, allow_origins=['*'])
+]
 
-# Create a FastAPI app instance
-app = FastAPI()
+app = FastAPI(middleware=middleware)
 
-# Define a route and a function to handle requests to that route
-@app.post("/items")
-async def create_item(item: Item):
-    print(item.message)
-    return "item_dict"
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/itemsTwo")
-async def create_item(item: Item):
-    return "item_dict"
+class name(BaseModel):
+    firstName: str
+
+# async def parse_map():
+#     contents = await file.read()
+#     return map_handler.parse_map_from_file(contents)
+@app.post("/firstTry")
+async def video_stream(name_i:name):
+    return json.dumps({"status": "ok"})
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="10.100.102.20", port=8000)
