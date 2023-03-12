@@ -1,14 +1,13 @@
 import { Camera, CameraType } from "expo-camera";
 import React, { useState, useEffect, useRef } from "react";
-import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import axios from "axios";
-import { MediaRecorder, Video, AVPlaybackStatus } from "expo-av";
+import {StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import * as FileSystem from "expo-file-system";
+import { encode as btoa } from "base-64";
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
-  const [streamUrl, setStreamUrl] = useState(null);
-  const [recording, setRecording] = useState(false);
+  const [ws, setWs] = useState(null);
   // const [cameraRef, setCameraRef] = useState(null);
   const cameraRef = useRef(null);
 
@@ -19,37 +18,46 @@ export default function App() {
     })();
   }, []);
 
+
+  useEffect(() => {
+    function setWsConnection() {
+      const newWs = new WebSocket("ws://10.100.102.20:8000/stream");
+      setWs(newWs);
+    }
+    setWsConnection();
+  }, []);
+
   const startStreaming = async () => {
     try {
-      if (cameraRef.current) {
-        console.log("zohar");
-        const streamUrlLocal = "http://10.100.102.20:8000/stream";
-        setStreamUrl(streamUrl);
-        const stream = await cameraRef.current.takePictureAsync(); // get the camera stream
-        let form = new FormData();
-        form.append("file", {
-          uri: stream.uri,
-          type: "image/jpeg",
-          name: "image.jpg",
-        });
-        let req = await axios({
-          method: "post",
-          url: streamUrlLocal,
-          data: form,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        let res = await req.data;
-        console.log(res);
+      if (cameraRef.current && ws) {
+        const stream = await cameraRef.current.takePictureAsync();
+        const response = await fetch(stream.uri);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = function() {
+          const base64data = reader.result.split(',')[1];
+          ws.send(JSON.stringify({ type: "image", data: base64data }));
+        }
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  setInterval(startStreaming, 500); // Call startStreaming every 0.1 second (100 milliseconds)
+  useEffect(() => {
+    if (ws) {
+      setInterval(startStreaming, 400);
+    }
+  }, [ws]);
+
+  useEffect(() => {
+    if (ws) {
+      ws.onmessage = (event) => {
+        console.log(event.data);
+      };
+    }
+  }, [ws]);
 
   if (hasPermission === null) {
     return <View />;

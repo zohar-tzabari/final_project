@@ -1,45 +1,78 @@
 import json
-from PIL import ImageTk
-from PIL import Image
-import io
+import base64
 from starlette.middleware import Middleware
-from fastapi import FastAPI, Request, WebSocket, File, UploadFile, Form,WebSocketDisconnect
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from pydantic import BaseModel
+from PIL import Image, ImageTk
 import tkinter as tk
-
-middleware = [
-    Middleware(CORSMiddleware, allow_origins=['*'])
-]
-
-app = FastAPI(middleware=middleware)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class name(BaseModel):
-    firstName: str
+import io
+import threading
 
 
-@app.post("/firstTry")
-async def video_stream(name_i:name):
-    return json.dumps({"status": "ok"})
+class ImageWindow:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.label = tk.Label(self.root)
+        self.label.pack()
+
+    def show_image(self, image_data):
+        image = Image.open(io.BytesIO(base64.b64decode(image_data)))
+        photo = ImageTk.PhotoImage(image)
+        self.label.configure(image=photo)
+        self.label.image = photo
+
+    def run(self):
+        self.root.mainloop()
+
+window = ImageWindow()
+
+def run_server():
+    app = FastAPI()
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    class name(BaseModel):
+        firstName: str
 
 
-@app.post("/stream")
-async def video_stream(file: UploadFile = File(...)):
-    contents = await file.read()
-    image = Image.open(io.BytesIO(contents))
-    print(image)
-    return json.dumps({"status": "ok"})
+    async def websocket_handler(websocket: WebSocket):
+        await websocket.accept()
+        while True:
+            try:
+                data = await websocket.receive_text()
+                data = json.loads(data)
+                if data['type'] == 'image':
+                    image_data = base64.b64decode(data['data'])
+                    # Try to open the image and log any errors
+                    dataBytesIO = io.BytesIO(image_data)
+                    image = Image.open(dataBytesIO)
+                    # Display the image
+                    # Display the image in the window
+                    window.show_image(data['data'])
+                    print("hi zohar")
+                # Send a response back to the client
+                response = json.dumps({"status": "ok"})
+                await websocket.send_text(response)
+            except WebSocketDisconnect:
+                print("stop")
+                break
 
+    @app.websocket("/stream")
+    async def video_stream(websocket: WebSocket):
+        await websocket_handler(websocket)
+
+    uvicorn.run(app, host="10.100.102.20", port=8000)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="10.100.102.20", port=8000)
+    server_thread = threading.Thread(target=run_server)
+    server_thread.start()
+
+    window.run()
