@@ -1,8 +1,9 @@
 import { Camera, CameraType } from "expo-camera";
 import React, { useState, useEffect, useRef } from "react";
-import {StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { encode as btoa } from "base-64";
+import * as ImageManipulator from "expo-image-manipulator";
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -18,7 +19,6 @@ export default function App() {
     })();
   }, []);
 
-
   useEffect(() => {
     function setWsConnection() {
       const newWs = new WebSocket("ws://10.100.102.20:8000/stream");
@@ -30,15 +30,25 @@ export default function App() {
   const startStreaming = async () => {
     try {
       if (cameraRef.current && ws) {
-        const stream = await cameraRef.current.takePictureAsync();
-        const response = await fetch(stream.uri);
+        // Take picture with camera
+        const picture = await cameraRef.current.takePictureAsync();
+
+        // Resize image to YOLOv5 size (640x640)
+        const resizedPicture = await ImageManipulator.manipulateAsync(
+          picture.uri,
+          [{ resize: { width: 640, height: 640 } }],
+          { format: "jpeg" }
+        );
+
+        // Convert image to base64 format
+        const response = await fetch(resizedPicture.uri);
         const blob = await response.blob();
         const reader = new FileReader();
         reader.readAsDataURL(blob);
-        reader.onloadend = function() {
-          const base64data = reader.result.split(',')[1];
+        reader.onloadend = function () {
+          const base64data = reader.result.split(",")[1];
           ws.send(JSON.stringify({ type: "image", data: base64data }));
-        }
+        };
       }
     } catch (error) {
       console.log(error);
@@ -47,7 +57,7 @@ export default function App() {
 
   useEffect(() => {
     if (ws) {
-      setInterval(startStreaming, 400);
+      setInterval(startStreaming, 500);
     }
   }, [ws]);
 
