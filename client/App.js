@@ -1,6 +1,6 @@
 import { Camera, CameraType } from "expo-camera";
 import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { encode as btoa } from "base-64";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -9,6 +9,10 @@ export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [ws, setWs] = useState(null);
+  const [dataRecived, setDataRecived] = useState(null);
+
+  const [imageData, setImageData] = useState(null);
+
   // const [cameraRef, setCameraRef] = useState(null);
   const cameraRef = useRef(null);
 
@@ -58,16 +62,36 @@ export default function App() {
   useEffect(() => {
     if (ws) {
       setInterval(startStreaming, 500);
-    }
-  }, [ws]);
-
-  useEffect(() => {
-    if (ws) {
       ws.onmessage = (event) => {
-        console.log(event.data);
+        console.log("hi");
+        setDataRecived(event);
       };
     }
   }, [ws]);
+
+  // const showPhoto = () => {
+  //   if (dataRecived) {
+  //     // Parse the JSON data and extract the compressed image data
+  //     const { image } = JSON.parse(dataRecived);
+
+  //     // Decode the base64-encoded image data
+  //     const decodedImageData = Buffer.from(image, "base64");
+
+  //     // Convert the decoded image data to a binary buffer
+  //     const imageBuffer = decodedImageData.buffer.slice(
+  //       decodedImageData.byteOffset,
+  //       decodedImageData.byteOffset + decodedImageData.byteLength
+  //     );
+
+  //     // Create a Blob object from the binary buffer
+  //     const imageBlob = new Blob([imageBuffer], { type: "image/jpeg" });
+
+  //     // Create a URL for the Blob object using the URL.createObjectURL() method
+  //     const imageUrl = URL.createObjectURL(imageBlob);
+
+  //     // Set the image URL to the state variable
+  //     setImageData(imageUrl);      
+  //   }
 
   if (hasPermission === null) {
     return <View />;
@@ -92,7 +116,10 @@ export default function App() {
         </TouchableOpacity>
       </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={console.log("press")}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => console.log("press")}
+        >
           <Text style={styles.text}>Start Streaming</Text>
         </TouchableOpacity>
       </View>
