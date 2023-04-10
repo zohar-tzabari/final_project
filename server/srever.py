@@ -69,7 +69,7 @@ def run_server():
     async def video_stream(websocket: WebSocket):
         await websocket_handler(websocket)
 
-    uvicorn.run(app, host="10.100.102.20", port=8000)
+    uvicorn.run(app, host="192.168.197.186", port=8000)
 
 if __name__ == "__main__":
     server_thread = threading.Thread(target=run_server)
