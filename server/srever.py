@@ -18,26 +18,17 @@ import threading
 from PIL import Image, ImageTk , ImageOps
 
 import yolov5.detect as detect
-
-
+IP = "172.20.10.2"
 class name(BaseModel):
     firstName: str
 
-def run_ml(img):
-    # Load the model
-    model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-    # Set the model to evaluate mode
-    model.eval()
-    # Run the model on the image
-    results = model([img])
-    results.print()  # print the detected object classes and confidence scores
-    results.show()  # show the image with bounding boxes around detected objects
-
-class ImageWindow:
+class ImageProcess:
     def __init__(self):
-        self.root = tk.Tk()
-        self.label = tk.Label(self.root)
-        self.label.pack()
+        # Load the YOLOv5 model
+        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+        self.current_photo = None
+        self.current_boxes = None
+
         # Define colors for each object class
         self.colors = [(255, 0, 0),   # red for class 0
                        (0, 255, 0),   # green for class 1
@@ -46,12 +37,8 @@ class ImageWindow:
                        (0, 120, 255),
                        (120, 0, 120),
                        (255, 0, 255)]
-        # Load the YOLOv5 model
-        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-        self.cuerrnt_photo = None
-        self.cuerrnt_boxes = None
 
-    def show_image(self, image_data):
+    def analyze_photo(self,image_data):
         # Run the model on the image
         results = self.model([image_data])
 
@@ -68,8 +55,18 @@ class ImageWindow:
             image_draw.rectangle((x1, y1, x1 + len(label) * 8, y1 - 15), fill=color)
             image_draw.text((x1, y1 - 15), label, fill=(255, 255, 255))
 
-        self.cuerrnt_photo = image_data
-        self.cuerrnt_boxes = boxes
+        self.current_photo = image_data
+        self.current_boxes = boxes
+
+class ImageWindow:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.label = tk.Label(self.root)
+        self.label.pack()
+
+
+
+    def show_image(self, image_data):
         photo = ImageTk.PhotoImage(image_data)
         self.label.configure(image=photo)
         self.label.image = photo
@@ -96,6 +93,7 @@ def run_server():
 
     async def websocket_handler(websocket: WebSocket):
         await websocket.accept()
+        window = ImageProcess()
         while True:
             try:
                 data = await websocket.receive_text()
@@ -108,12 +106,11 @@ def run_server():
                     image = Image.open(dataBytesIO)
                     # print(type(image))
                     # Display the image in the window
-                    window.show_image(image)
-                    print("------------------------------------------")
+                    window.analyze_photo(image)
                     # run_ml(image)
                 # Send a response back to the client
-                    if window.cuerrnt_photo and not isinstance(type(window.cuerrnt_boxes), type(None)):
-                        image = window.cuerrnt_photo
+                    if window.current_photo and not isinstance(type(window.current_boxes), type(None)):
+                        image = window.current_photo
                         # Compress the image using Pillow-SIMD
                         compressed_image = ImageOps.exif_transpose(image)
                         compressed_image = compressed_image.convert('RGB')
@@ -125,7 +122,7 @@ def run_server():
                         # Convert the compressed image data to a base64-encoded string
                         compressed_image_data = base64.b64encode(compressed_image_bytes.read()).decode('utf-8')
 
-                        response = json.dumps({"cuerrnt_photo": compressed_image_data})
+                        response = json.dumps({"current_photo": compressed_image_data})
                 if not response:
                     response = json.dumps({"status": "ok"})
                 await websocket.send_text(response)
@@ -137,12 +134,10 @@ def run_server():
     async def video_stream(websocket: WebSocket):
         await websocket_handler(websocket)
 
-    uvicorn.run(app, host="10.100.102.20", port=8000)
+    uvicorn.run(app, host=IP, port=8000)
 
 if __name__ == "__main__":
-    # Model
-
     server_thread = threading.Thread(target=run_server)
     server_thread.start()
-
-    window.run()
+    #
+    # window.run()
