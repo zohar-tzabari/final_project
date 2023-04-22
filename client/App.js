@@ -1,22 +1,27 @@
-import { Camera, CameraType } from "expo-camera";
+import { Camera } from "expo-camera";
 import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
+import { StyleSheet, Text, View, Image } from "react-native";
 import * as ImageManipulator from "expo-image-manipulator";
-const IP = "172.20.10.2:8000";
+import { Dimensions } from "react-native";
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
+const cameraType = Camera.Constants.Type.back;
+
+const IP = "10.100.102.20:8000";
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
-  const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [ws, setWs] = useState(null);
   const [imageData, setImageData] = useState(null);
 
-  // const [cameraRef, setCameraRef] = useState(null);
   const cameraRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === "granted");
+      console.log(windowWidth);
+      console.log(windowHeight);
     })();
   }, []);
 
@@ -26,7 +31,7 @@ export default function App() {
       setWs(newWs);
     }
     setWsConnection();
-  }, [ws]);
+  }, []);
 
   const startStreaming = async () => {
     try {
@@ -52,17 +57,14 @@ export default function App() {
         };
       }
     } catch (error) {
-      console.log(error);
     }
   };
 
   useEffect(() => {
     if (ws) {
-      setInterval(startStreaming, 500);
+      setInterval(startStreaming, 400);
       ws.onmessage = (event) => {
-        console.log("hi");
         const current_photo = JSON.parse(event.data).current_photo;
-        // console.log(current_photo);
         setImageData(current_photo);
       };
     }
@@ -76,59 +78,29 @@ export default function App() {
     return <Text>No access to camera</Text>;
   }
 
-  function toggleCameraType() {
-    setCameraType((current) =>
-      current === CameraType.back ? CameraType.front : CameraType.back
-    );
-  }
 
   return (
     <View style={styles.container}>
-      <View style={styles.cameraContainer}>
-        <Camera style={styles.camera} type={cameraType} ref={cameraRef}>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
-              <Text style={styles.text}>Flip Camera</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={{ display: "none" }}>
+        <Camera type={cameraType} ref={cameraRef}>
         </Camera>
       </View>
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: `data:image/jpeg;base64,${imageData}`}}
+          source={{ uri: `data:image/jpeg;base64,${imageData}` }}
           style={styles.image}
         />
       </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ff00",
-    flexDirection: "column", // Changed to column
+    backgroundColor: "#E7E7F7", // modified to black
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-  },
-  cameraContainer: {
-    flex: 1,
-    height: "50%", // Adjusted height to 50%
-    aspectRatio: 1,
-    borderWidth: 1,
-    borderColor: "#000",
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: "blue",
-    borderRadius: 5,
-    padding: 10,
   },
   text: {
     color: "#fff",
@@ -136,12 +108,24 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flex: 1,
-    height: "50%", // Adjusted height to 50%
-    aspectRatio: 1,
-    borderWidth: 1,
-    borderColor: "#000",
+    width: "100%",
+  },
+  imageContainer: {
+    flex: 1,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 8,
   },
   image: {
-    flex: 1,
+    width: windowWidth,
+    height: windowHeight,
+    resizeMode: "contain",
+    borderRadius: 10,
   },
 });

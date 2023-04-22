@@ -18,7 +18,7 @@ import threading
 from PIL import Image, ImageTk , ImageOps
 
 import yolov5.detect as detect
-IP = "172.20.10.2"
+IP = "10.100.102.20"
 class name(BaseModel):
     firstName: str
 
@@ -65,7 +65,6 @@ class ImageWindow:
         self.label.pack()
 
 
-
     def show_image(self, image_data):
         photo = ImageTk.PhotoImage(image_data)
         self.label.configure(image=photo)
@@ -75,7 +74,7 @@ class ImageWindow:
     def run(self):
         self.root.mainloop()
 
-window = ImageWindow()
+# window = ImageWindow()
 
 
 
@@ -89,7 +88,6 @@ def run_server():
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
 
     async def websocket_handler(websocket: WebSocket):
         await websocket.accept()
@@ -139,5 +137,3 @@ def run_server():
 if __name__ == "__main__":
     server_thread = threading.Thread(target=run_server)
     server_thread.start()
-    #
-    # window.run()
