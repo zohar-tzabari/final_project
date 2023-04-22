@@ -42,7 +42,6 @@ const Home = () => {
           style={styles.buttonImage}
           source={require('./assets/key.jpg')}
         />
-        <Text style={styles.buttonText}>Button 1</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
@@ -51,9 +50,56 @@ const Home = () => {
       >
         <Image
           style={styles.buttonImage}
-          source={require('./assets/key.jpg')}
+          source={require('./assets/phone.jpg')}
         />
-        <Text style={styles.buttonText}>Button 2</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => handleButtonPress('Button 3')}
+        onPressIn={() => handleButtonHover()}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityHint="Key"
+        accessibilityLabel="Key"
+      >
+        <Image
+          style={styles.buttonImage}
+          source={require('./assets/laptop.jpg')}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => handleButtonPress('Button 4')}
+        onPressIn={() => handleButtonHover()}
+      >
+        <Image
+          style={styles.buttonImage}
+          source={require('./assets/umbrella.jpg')}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => handleButtonPress('Button 5')}
+        onPressIn={() => handleButtonHover()}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityHint="Key"
+        accessibilityLabel="Key"
+      >
+        <Image
+          style={styles.buttonImage}
+          source={require('./assets/remote.jpg')}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => handleButtonPress('Button 6')}
+        onPressIn={() => handleButtonHover()}
+      >
+        <Image
+          style={styles.buttonImage}
+          source={require('./assets/bag.jpg')}
+        />
       </TouchableOpacity>
     </View>
   );
@@ -62,26 +108,28 @@ const Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
   button: {
     flexDirection: 'row',
-    backgroundColor: '#008080',
+    backgroundColor: '#ffffffff',
     padding: 20,
-    borderRadius: 10,
-    marginVertical: 10,
-    width: '80%',
+    borderRadius: 0,
+    //marginVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
     alignItems: 'center',
   },
   buttonImage: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
+    width: 67,
+    height: 75,
+    //marginRight: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 20,
     fontWeight: 'bold',
   },
