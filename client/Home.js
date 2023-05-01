@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, TouchableWithoutFeedback, Platform, NativeModules } from 'react-native';
+import * as React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, TouchableWithoutFeedback, Platform, NativeModules,Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 //import Sound from 'react-native-sound';
+import { Audio } from 'expo-av';
 
 const { UIManager } = NativeModules;
 UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -13,25 +14,26 @@ const Home = () => {
     navigation.navigate('Commera', { buttonName });
   };
 
+  async function playSound() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync( require('./assets/sounds/key.mp3'));
+    
+  
+    console.log('Playing Sound');
+    await sound.playAsync();
+  }
+
   const handleButtonHover = () => {
-    const isAndroid = NativeModules?.PlatformConstants?.os === 'android';
-    if (isAndroid && NativeModules?.UIManager) {
-      NativeModules.UIManager.setLayoutAnimationEnabledExperimental?.(true);
-    }
-    // const hoverSound = new Sound('C:/Users/roe19/final_project/client/assets/sounds/key.mp3', Sound.MAIN_BUNDLE, (error) => {
-    //   if (error) {
-    //     console.log('failed to load the sound', error);
-    //     return;
-    //   }
-    //   hoverSound.play();
-    // });
+    
+
+    playSound();
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => handleButtonPress('Button 1')}
+        onPress={() => handleButtonPress('key')}
         onPressIn={() => handleButtonHover()}
         accessible={true}
         accessibilityRole="button"
