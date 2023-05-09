@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 
 
 import Home from './Home';
-import Commera from './Commera';
+import SearchObject from './SearchObject';
 
 const Stack = createStackNavigator();
 
@@ -12,7 +12,7 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Commera" component={Commera} />
+        <Stack.Screen name="SearchObject" component={SearchObject} />
               </Stack.Navigator>
     </NavigationContainer>
   );
