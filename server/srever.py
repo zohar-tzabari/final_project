@@ -1,7 +1,8 @@
 import json
 import base64
+import pathlib
 import subprocess
-
+import os
 import PIL
 import torch
 import numpy as np
@@ -17,15 +18,16 @@ import io
 import threading
 from PIL import Image, ImageTk , ImageOps
 
-import yolov5.detect as detect
 IP = "10.100.102.20"
 class name(BaseModel):
     firstName: str
 
 class ImageProcess:
-    def __init__(self):
+    def __init__(self,model):
         # Load the YOLOv5 model
-        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+        self.model= model
+
+        # self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
         self.current_photo = None
         self.current_boxes = None
 
@@ -77,8 +79,7 @@ class ImageWindow:
 # window = ImageWindow()
 
 
-
-def run_server():
+def run_server(model):
     app = FastAPI()
 
     app.add_middleware(
@@ -91,7 +92,7 @@ def run_server():
 
     async def websocket_handler(websocket: WebSocket):
         await websocket.accept()
-        window = ImageProcess()
+        window = ImageProcess(model)
         while True:
             try:
                 data = await websocket.receive_text()
@@ -135,5 +136,15 @@ def run_server():
     uvicorn.run(app, host=IP, port=8000)
 
 if __name__ == "__main__":
-    server_thread = threading.Thread(target=run_server)
+    # model_path = "runs/train/exp4/weights/last.pt"
+    # repo_path = pathlib.Path(os.getcwd()).parent
+    # absolute_model_path = os.path.join(repo_path, model_path)
+    # model = torch.hub.load('ultralytics/yolov5', 'custom',
+    #                             path=absolute_model_path, force_reload=True)
+    model_path = "runs/train/exp4/weights/last.pt"
+    repo_path = pathlib.Path(os.getcwd()).parent
+    absolute_model_path = os.path.join(repo_path, model_path)
+    model = torch.hub.load('ultralytics/yolov5', 'custom',
+                           path=absolute_model_path, force_reload=True)
+    server_thread = threading.Thread(target=lambda :run_server(model))
     server_thread.start()
