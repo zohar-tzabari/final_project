@@ -24,95 +24,21 @@ const HomePresenter = ({ handleButtonPress, handleButtonHover }) => {
   return (
 <View style={styles.container}>
       <View style={styles.row}>
-        {createButton("key", require("./assets/key.jpg"))}
-        {createButton("fork", require("./assets/fork.jpg"))}
+        {createButton("key", require("./assets/key.png"))}
+        {createButton("fork", require("./assets/fork.png"))}
       </View>
 
       <View style={styles.row}>
-        {createButton("spoon", require("./assets/spoon.jpg"))}
-        {createButton("knife", require("./assets/knife.jpg"))}
+        {createButton("spoon", require("./assets/spoon.png"))}
+        {createButton("knife", require("./assets/knife.png"))}
       </View>
 
       <View style={styles.row}>
-        {createButton("bottle", require("./assets/bottle.jpg"))}
-        {createButton("toothbrush", require("./assets/toothbrush.jpg"))}
+        {createButton("bottle", require("./assets/bottle.png"))}
+        {createButton("toothbrush", require("./assets/toothbrush.png"))}
       </View>
     </View>
   );
-  
-    // <View style={styles.container}>
-    //   <View style={styles.row}>
-    //     <TouchableOpacity
-    //       style={styles.button}
-    //       onPress={() => handleButtonPress("key")}
-    //       onPressIn={() => handleButtonHover("key")}
-    //     >
-    //       <Image
-    //         style={styles.buttonImage}
-    //         source={require("./assets/key.jpg")}
-    //       />
-    //     </TouchableOpacity>
-
-    //     <TouchableOpacity
-    //       style={styles.button}
-    //       onPress={() => handleButtonPress("fork")}
-    //       onPressIn={() => handleButtonHover("fork")}
-    //     >
-    //       <Image
-    //         style={styles.buttonImageFork}
-    //         source={require("./assets/fork.jpg")}
-    //       />
-    //     </TouchableOpacity>
-    //   </View>
-
-    //   <View style={styles.row}>
-    //     <TouchableOpacity
-    //       style={styles.button}
-    //       onPress={() => handleButtonPress("spoon")}
-    //       onPressIn={() => handleButtonHover("spoon")}
-    //     >
-    //       <Image
-    //         style={styles.buttonImageSpoon}
-    //         source={require("./assets/spoon.jpg")}
-    //       />
-    //     </TouchableOpacity>
-
-    //     <TouchableOpacity
-    //       style={styles.button}
-    //       onPress={() => handleButtonPress("knife")}
-    //       onPressIn={() => handleButtonHover("knife")}
-    //     >
-    //       <Image
-    //         style={styles.buttonImageSpoon}
-    //         source={require("./assets/knife.jpg")}
-    //       />
-    //     </TouchableOpacity>
-    //   </View>
-
-    //   <View style={styles.row}>
-    //     <TouchableOpacity
-    //       style={styles.button}
-    //       onPress={() => handleButtonPress("bottle")}
-    //       onPressIn={() => handleButtonHover("bottle")}
-    //     >
-    //       <Image
-    //         style={styles.buttonImage}
-    //         source={require("./assets/bottle.jpg")}
-    //       />
-    //     </TouchableOpacity>
-
-    //     <TouchableOpacity
-    //       style={styles.button}
-    //       onPress={() => handleButtonPress("toothbrush")}
-    //       onPressIn={() => handleButtonHover("toothbrush")}
-    //     >
-    //       <Image
-    //         style={styles.buttonImageToot}
-    //         source={require("./assets/toothbrush.jpg")}
-    //       />
-    //     </TouchableOpacity>
-    //   </View>
-    // </View>
 };
 
 const styles = StyleSheet.create({
@@ -132,15 +58,15 @@ const styles = StyleSheet.create({
   },
   button: {
     flexDirection: "row",
-    backgroundColor: "#ffffffff",
-    //padding: 20,
-    //borderRadius: 0,
+    backgroundColor: "#e5e5e5",
+    padding: 20,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
     width: "50%",
     height: "100%",
     alignItems: "center",
-    //borderWidth: 1,
+    borderWidth: 1,
     //borderColor: 'black'
   },
   buttonImage: {
