@@ -3,16 +3,20 @@ import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Dimensions } from "react-native";
+
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 const cameraType = Camera.Constants.Type.back;
 
 const IP = "10.100.102.20:8000";
 
-export default function App() {
+export default function App({item}) {
   const [hasPermission, setHasPermission] = useState(null);
   const [ws, setWs] = useState(null);
   const [imageData, setImageData] = useState(null);
+  const itemToSearch = useRef(item);
+  const [itemFound,setItemFound] = useState(false);
+
 
   const cameraRef = useRef(null);
 
@@ -27,7 +31,7 @@ export default function App() {
 
   useEffect(() => {
     function setWsConnection() {
-      const newWs = new WebSocket(`ws://${IP}/stream`);
+      const newWs = new WebSocket(`ws://${IP}/stream/${itemToSearch.current}`);
       setWs(newWs);
     }
     setWsConnection();
@@ -65,6 +69,12 @@ export default function App() {
       setInterval(startStreaming, 400);
       ws.onmessage = (event) => {
         const current_photo = JSON.parse(event.data).current_photo;
+        const foundItem = JSON.parse(event.data).isItemFound;
+        setItemFound(foundItem);
+        if (foundItem)
+        {
+          //make vibrate
+        }
         setImageData(current_photo);
       };
     }
