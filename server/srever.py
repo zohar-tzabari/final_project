@@ -23,12 +23,11 @@ class name(BaseModel):
     firstName: str
 
 class ImageProcess:
-    def __init__(self,model,item:str):
+    def __init__(self,item:str):
         # Load the YOLOv5 model
-        self.model= model
         self.item = item
         self.item_found = False
-        # self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
         self.current_photo = None
         self.current_boxes = None
 
@@ -81,7 +80,7 @@ class ImageWindow:
 # window = ImageWindow()
 
 
-def run_server(model):
+def run_server():
     app = FastAPI()
 
     app.add_middleware(
@@ -94,7 +93,7 @@ def run_server(model):
 
     async def websocket_handler(websocket: WebSocket,item:str):
         await websocket.accept()
-        window = ImageProcess(model,item)
+        window = ImageProcess(item)
         while True:
             try:
                 data = await websocket.receive_text()
@@ -144,7 +143,7 @@ if __name__ == "__main__":
     model_path = "runs/train/exp4/weights/last.pt"
     repo_path = pathlib.Path(os.getcwd()).parent
     absolute_model_path = os.path.join(repo_path, model_path)
-    model = torch.hub.load('ultralytics/yolov5', 'custom',
-                           path=absolute_model_path, force_reload=True)
-    server_thread = threading.Thread(target=lambda :run_server(model))
+    # model = torch.hub.load('ultralytics/yolov5', 'custom',
+    #                        path=absolute_model_path, force_reload=True)
+    server_thread = threading.Thread(target=lambda:run_server())
     server_thread.start()
