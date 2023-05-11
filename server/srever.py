@@ -1,18 +1,13 @@
 import json
 import base64
 import pathlib
-import subprocess
 import os
-import PIL
 import torch
-import numpy as np
 from PIL import ImageDraw
-from starlette.middleware import Middleware
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from pydantic import BaseModel
-from PIL import Image, ImageTk
 import tkinter as tk
 import io
 import threading
@@ -27,6 +22,7 @@ class ImageProcess:
         # Load the YOLOv5 model
         self.item = item
         self.item_found = False
+        self.get_item_to_search = None
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
         self.current_photo = None
         self.current_boxes = None
@@ -39,8 +35,9 @@ class ImageProcess:
                        (0, 120, 255),
                        (120, 0, 120),
                        (255, 0, 255)]
+        self.item_to_search = None
 
-    def analyze_photo(self,image_data):
+    def analyze_photo(self,image_data)->None:
         # Run the model on the image
         results = self.model([image_data])
 
@@ -60,6 +57,12 @@ class ImageProcess:
                 image_draw.text((x1, y1 - 15), label, fill=(255, 255, 255))
         self.current_photo = image_data
         self.current_boxes = boxes
+
+    def set_item_to_search(self, item:str)->None:
+        self.item_to_search = item
+
+    def get_item_to_search(self)->str:
+        return self.item_to_search
 
 class ImageWindow:
     def __init__(self):
@@ -99,7 +102,10 @@ def run_server():
                 data = await websocket.receive_text()
                 data = json.loads(data)
                 response = None
-                if data['type'] == 'image':
+                if data['type'] == 'itemToSearch':
+                    window.set_item_to_search(data['type'])
+                    print(window.get_item_to_search())
+                if data['type'] and window.get_item_to_search() is not None == 'image':
                     image_data = base64.b64decode(data['data'])
                     # Try to open the image and log any errors
                     dataBytesIO = io.BytesIO(image_data)
@@ -146,4 +152,5 @@ if __name__ == "__main__":
     # model = torch.hub.load('ultralytics/yolov5', 'custom',
     #                        path=absolute_model_path, force_reload=True)
     server_thread = threading.Thread(target=lambda:run_server())
+
     server_thread.start()
