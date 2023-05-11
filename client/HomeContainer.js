@@ -14,7 +14,6 @@ const HomeContainer = () => {
     };
   }, []);
 
-
   const playSound = async (soundName) => {
     try {
       const soundMap = {
