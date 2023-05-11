@@ -1,27 +1,37 @@
-import { Camera, CameraType } from "expo-camera";
+import { Camera } from "expo-camera";
 import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import * as FileSystem from "expo-file-system";
-import { encode as btoa } from "base-64";
+import { StyleSheet, Text, View, Image } from "react-native";
 import * as ImageManipulator from "expo-image-manipulator";
+import { Dimensions } from "react-native";
 
-export const Commera = () => {
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
+const cameraType = Camera.Constants.Type.back;
+
+const IP = "10.100.102.20:8000";
+
+export default function SearchObject({item}) {
   const [hasPermission, setHasPermission] = useState(null);
-  const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [ws, setWs] = useState(null);
-  // const [cameraRef, setCameraRef] = useState(null);
+  const [imageData, setImageData] = useState(null);
+  const itemToSearch = useRef(item);
+  const [itemFound,setItemFound] = useState(false);
+
+
   const cameraRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === "granted");
+      console.log(windowWidth);
+      console.log(windowHeight);
     })();
   }, []);
 
   useEffect(() => {
     function setWsConnection() {
-      const newWs = new WebSocket("ws://192.168.197.186:8000/stream");
+      const newWs = new WebSocket(`ws://${IP}/stream/${itemToSearch.current}`);
       setWs(newWs);
     }
     setWsConnection();
@@ -51,20 +61,21 @@ export const Commera = () => {
         };
       }
     } catch (error) {
-      console.log(error);
     }
   };
 
   useEffect(() => {
     if (ws) {
-      setInterval(startStreaming, 500);
-    }
-  }, [ws]);
-
-  useEffect(() => {
-    if (ws) {
+      setInterval(startStreaming, 400);
       ws.onmessage = (event) => {
-        console.log(event.data);
+        const current_photo = JSON.parse(event.data).current_photo;
+        const foundItem = JSON.parse(event.data).isItemFound;
+        setItemFound(foundItem);
+        if (foundItem)
+        {
+          //make vibrate
+        }
+        setImageData(current_photo);
       };
     }
   }, [ws]);
@@ -77,53 +88,54 @@ export const Commera = () => {
     return <Text>No access to camera</Text>;
   }
 
-  function toggleCameraType() {
-    setCameraType((current) =>
-      current === CameraType.back ? CameraType.front : CameraType.back
-    );
-  }
 
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera} type={cameraType} ref={cameraRef}></Camera>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
-          <Text style={styles.text}>Flip Camera</Text>
-        </TouchableOpacity>
+      <View style={{ display: "none" }}>
+        <Camera type={cameraType} ref={cameraRef}>
+        </Camera>
       </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={console.log("press")}>
-          <Text style={styles.text}>Start Streaming</Text>
-        </TouchableOpacity>
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: `data:image/jpeg;base64,${imageData}` }}
+          style={styles.image}
+        />
       </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    position: "absolute",
-    bottom: 20,
-    left: 0,
-    right: 0,
+    backgroundColor: "#E7E7F7", // modified to black
+    flexDirection: "column",
     alignItems: "center",
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: "white",
-    borderRadius: 10,
+    justifyContent: "center",
   },
   text: {
-    fontSize: 18,
+    color: "#fff",
     fontWeight: "bold",
   },
+  imageContainer: {
+    flex: 1,
+    width: "100%",
+  },
+  imageContainer: {
+    flex: 1,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  image: {
+    width: windowWidth,
+    height: windowHeight,
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
 });
-
-export default Commera;
