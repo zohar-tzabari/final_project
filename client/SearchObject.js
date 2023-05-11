@@ -10,7 +10,7 @@ const cameraType = Camera.Constants.Type.back;
 
 const IP = "10.100.102.20:8000";
 
-export default function App({item}) {
+export default function SearchObject({item}) {
   const [hasPermission, setHasPermission] = useState(null);
   const [ws, setWs] = useState(null);
   const [imageData, setImageData] = useState(null);
