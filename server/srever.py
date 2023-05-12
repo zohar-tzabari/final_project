@@ -1,6 +1,7 @@
 import json
 import base64
 import pathlib
+from pathlib import Path
 import os
 import torch
 from PIL import ImageDraw
@@ -17,13 +18,21 @@ IP = "10.100.102.20"
 class name(BaseModel):
     firstName: str
 
+
+class CustomModel:
+    def __init__(self,model_path:Path):
+        self.model_path = model_path
+        self.model = torch.hub.load('ultralytics/yolov5', 'custom',
+                               path=model_path, force_reload=True)
+
+
 class ImageProcess:
-    def __init__(self,item:str):
+    def __init__(self,item:str,model:torch.hub):
         # Load the YOLOv5 model
         self.item = item
         self.item_found = False
         self.get_item_to_search = None
-        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+        self.model = model
         self.current_photo = None
         self.current_boxes = None
 
@@ -70,12 +79,10 @@ class ImageWindow:
         self.label = tk.Label(self.root)
         self.label.pack()
 
-
     def show_image(self, image_data):
         photo = ImageTk.PhotoImage(image_data)
         self.label.configure(image=photo)
         self.label.image = photo
-
 
     def run(self):
         self.root.mainloop()
@@ -83,7 +90,7 @@ class ImageWindow:
 # window = ImageWindow()
 
 
-def run_server():
+def run_server(model:torch.hub):
     app = FastAPI()
 
     app.add_middleware(
@@ -149,8 +156,7 @@ if __name__ == "__main__":
     model_path = "runs/train/exp4/weights/last.pt"
     repo_path = pathlib.Path(os.getcwd()).parent
     absolute_model_path = os.path.join(repo_path, model_path)
-    # model = torch.hub.load('ultralytics/yolov5', 'custom',
-    #                        path=absolute_model_path, force_reload=True)
-    server_thread = threading.Thread(target=lambda:run_server())
+    model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+    server_thread = threading.Thread(target=lambda:run_server(model))
 
     server_thread.start()
