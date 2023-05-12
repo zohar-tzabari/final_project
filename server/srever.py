@@ -90,29 +90,28 @@ class ImageWindow:
 # window = ImageWindow()
 
 
-def run_server(model:torch.hub):
-    app = FastAPI()
+class RunServer:
+    def __init__(self,model:torch.hub):
+        self.model = model
+        app = FastAPI()
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+        async def websocket_handler(websocket: WebSocket,item:str):
+            await websocket.accept()
 
-    async def websocket_handler(websocket: WebSocket,item:str):
-        await websocket.accept()
-        window = ImageProcess(item)
-        while True:
-            try:
-                data = await websocket.receive_text()
-                data = json.loads(data)
-                response = None
-                if data['type'] == 'itemToSearch':
-                    window.set_item_to_search(data['type'])
-                    print(window.get_item_to_search())
-                if data['type'] and window.get_item_to_search() is not None == 'image':
+            window = ImageProcess(item,self.model)
+
+            while True:
+                try:
+                    data = await websocket.receive_text()
+                    data = json.loads(data)
+                    response = None
                     image_data = base64.b64decode(data['data'])
                     # Try to open the image and log any errors
                     dataBytesIO = io.BytesIO(image_data)
@@ -134,18 +133,18 @@ def run_server(model:torch.hub):
 
                         response = json.dumps({"current_photo": compressed_image_data,
                                                "isItemFound":str(window.item_found).lower()})
-                if not response:
-                    response = json.dumps({"status": "ok"})
-                await websocket.send_text(response)
-            except WebSocketDisconnect:
-                print("stop")
-                break
+                    if not response:
+                        response = json.dumps({"status": "ok"})
+                    await websocket.send_text(response)
+                except WebSocketDisconnect:
+                    print("stop")
+                    break
 
-    @app.websocket("/stream/{item}")
-    async def video_stream(websocket: WebSocket,item:str):
-        await websocket_handler(websocket,item)
+        @app.websocket("/stream/{item}")
+        async def video_stream(websocket: WebSocket,item:str):
+            await websocket_handler(websocket,item)
 
-    uvicorn.run(app, host=IP, port=8000)
+        uvicorn.run(app, host=IP, port=8000)
 
 if __name__ == "__main__":
     # model_path = "runs/train/exp4/weights/last.pt"
@@ -157,6 +156,6 @@ if __name__ == "__main__":
     repo_path = pathlib.Path(os.getcwd()).parent
     absolute_model_path = os.path.join(repo_path, model_path)
     model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-    server_thread = threading.Thread(target=lambda:run_server(model))
+    server_thread = threading.Thread(target=lambda:RunServer(model))
 
     server_thread.start()
