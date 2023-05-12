@@ -15,7 +15,7 @@ const HomePresenter = ({ handleButtonPress, handleButtonHover }) => {
       <ButtonFactory
         onPress={() => handleButtonPress(buttonName)}
         onPressIn={() => handleButtonHover(buttonName)}
-        buttonImageStyle={buttonName === "toothbrush" ? styles.buttonImageToot : buttonName === "spoon" ? styles.buttonImageSpoon : buttonName === "knife" ? styles.buttonImageSpoon :  buttonName === "fork" ? styles.buttonImageFork : styles.buttonImage}
+        buttonImageStyle={styles.buttonImage}
         source={imageSource}
       />
     );
@@ -25,12 +25,12 @@ const HomePresenter = ({ handleButtonPress, handleButtonHover }) => {
 <View style={styles.container}>
       <View style={styles.row}>
         {createButton("key", require("./assets/key.png"))}
-        {createButton("fork", require("./assets/fork.png"))}
+        {createButton("glasses", require("./assets/glasses.png"))}
       </View>
 
       <View style={styles.row}>
         {createButton("spoon", require("./assets/spoon.png"))}
-        {createButton("knife", require("./assets/knife.png"))}
+        {createButton("fork", require("./assets/fork.png"))}
       </View>
 
       <View style={styles.row}>
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: "row",
     backgroundColor: "#e5e5e5",
-    padding: 20,
+    //padding: 20,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
@@ -70,25 +70,8 @@ const styles = StyleSheet.create({
     //borderColor: 'black'
   },
   buttonImage: {
-    width: "80%",
-    height: "80%",
-  },
-  buttonImageSpoon: {
-    width: "100%",
-    height: "60%",
-  },
-  buttonImageFork: {
     width: "100%",
     height: "80%",
-  },
-  buttonImageToot: {
-    width: "100%",
-    height: "20%",
-  },
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 20,
-    fontWeight: "bold",
   },
 });
 export default HomePresenter;

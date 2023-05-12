@@ -14,7 +14,7 @@ import io
 import threading
 from PIL import Image, ImageTk , ImageOps
 
-IP = "10.100.102.20"
+IP = "192.168.166.186"
 class name(BaseModel):
     firstName: str
 
