@@ -1,11 +1,9 @@
 import React, { useEffect } from "react";
 import HomePresenter from "./HomePresenter";
-import { useNavigation } from "@react-navigation/native";
 import { Audio } from "expo-av";
 
 
-const HomeContainer = () => {
-  const navigation = useNavigation();
+const HomeContainer = ({ navigation }) => {
 
   useEffect(() => {
     // Clean up any resources when the component unmounts
@@ -34,7 +32,8 @@ const HomeContainer = () => {
   };
 
   const handleButtonPress = (buttonName) => {
-    navigation.navigate("SearchObject", { buttonName });
+    console.log(buttonName);
+    navigation.navigate("SearchObject", {"item":buttonName});
   };
 
   const handleButtonHover = (soundName) => {

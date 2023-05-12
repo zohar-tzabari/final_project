@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Dimensions } from "react-native";
+import { useRoute } from '@react-navigation/native';
+
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -10,12 +12,13 @@ const cameraType = Camera.Constants.Type.back;
 
 const IP = "10.100.102.20:8000";
 
-export default function SearchObject({item}) {
+export default function SearchObject() {
   const [hasPermission, setHasPermission] = useState(null);
   const [ws, setWs] = useState(null);
   const [imageData, setImageData] = useState(null);
-  const itemToSearch = useRef(item);
   const [itemFound,setItemFound] = useState(false);
+  const route = useRoute();
+  const  itemToSearch = route.params.item;
 
 
   const cameraRef = useRef(null);
@@ -31,7 +34,8 @@ export default function SearchObject({item}) {
 
   useEffect(() => {
     function setWsConnection() {
-      const newWs = new WebSocket(`ws://${IP}/stream/${itemToSearch.current}`);
+      console.log(itemToSearch);
+      const newWs = new WebSocket(`ws://${IP}/stream/${itemToSearch}`);
       setWs(newWs);
     }
     setWsConnection();
