@@ -110,6 +110,7 @@ class RunServer:
             while True:
                 try:
                     data = await websocket.receive_text()
+                    print(data)
                     data = json.loads(data)
                     response = None
                     image_data = base64.b64decode(data['data'])

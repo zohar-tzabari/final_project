@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import HomePresenter from "./HomePresenter";
-import { Audio } from "expo-av";
+import { Audio, Vibration } from "expo-av";
+import * as Haptics from 'expo-haptics';
 
 
 const HomeContainer = ({ navigation }) => {
@@ -33,8 +34,9 @@ const HomeContainer = ({ navigation }) => {
 
   const handleButtonPress = (buttonName) => {
     console.log(buttonName);
-    navigation.navigate("SearchObject", {"item":buttonName});
-  };
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+          navigation.navigate("SearchObject", { item: buttonName });
+  };  
 
   const handleButtonHover = (soundName) => {
     playSound(soundName);
