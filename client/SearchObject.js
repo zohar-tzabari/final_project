@@ -10,7 +10,7 @@ const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 const cameraType = Camera.Constants.Type.back;
 
-const IP = "192.168.166.186:8000";
+const IP = "10.100.102.20:8000";
 
 export default function SearchObject() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -25,6 +25,7 @@ export default function SearchObject() {
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
+      // Set manual focus
       setHasPermission(status === "granted");
       console.log(windowWidth);
       console.log(windowHeight);
@@ -42,17 +43,16 @@ export default function SearchObject() {
 
   const startStreaming = async () => {
     try {
-      if (cameraRef.current && ws) {
+      if (cameraRef && ws) {
         // Take picture with camera
-        const picture = await cameraRef.current.takePictureAsync();
-
+        let picture = await cameraRef.takePictureAsync();
         // Resize image to YOLOv5 size (640x640)
         const resizedPicture = await ImageManipulator.manipulateAsync(
           picture.uri,
           [{ resize: { width: 640, height: 640 } }],
           { format: "jpeg" }
         );
-
+        console.log(resizedPicture);
         // Convert image to base64 format
         const response = await fetch(resizedPicture.uri);
         const blob = await response.blob();
@@ -98,7 +98,11 @@ export default function SearchObject() {
   return (
     <View style={styles.container}>
       <View style={{ display: "none" }}>
-        <Camera type={cameraType} ref={cameraRef} autoFocus={Camera.Constants.AutoFocus.off} />
+        <Camera
+          type={cameraType}
+          style={{ flex: 1 }}
+          ref={(ref) => setCameraRef(ref)}
+        ></Camera>
       </View>
 <View style={styles.imageContainer}>
 <Image source={{ uri: 'data:image/jpeg;base64,${imageData}' }} style={styles.image} />
@@ -108,33 +112,37 @@ export default function SearchObject() {
 }
 
 const styles = StyleSheet.create({
-container: {
-flex: 1,
-backgroundColor: "#E7E7F7", // modified to black
-flexDirection: "column",
-alignItems: "center",
-justifyContent: "center",
-},
-text: {
-color: "#fff",
-fontWeight: "bold",
-},
-imageContainer: {
-flex: 1,
-width: "100%",
-shadowColor: "#000",
-shadowOffset: {
-width: 0,
-height: 2,
-},
-shadowOpacity: 1,
-shadowRadius: 10,
-elevation: 8,
-},
-image: {
-width: windowWidth,
-height: windowHeight,
-resizeMode: "contain",
-borderRadius: 10,
-},
+  container: {
+    flex: 1,
+    backgroundColor: "#E7E7F7", // modified to black
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  imageContainer: {
+    flex: 1,
+    width: "100%",
+  },
+  imageContainer: {
+    flex: 1,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  image: {
+    width: windowWidth,
+    height: windowHeight,
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
 });
