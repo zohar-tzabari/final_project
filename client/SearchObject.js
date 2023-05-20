@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, Image, Vibration } from "react-native";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Dimensions } from "react-native";
 import { useRoute } from "@react-navigation/native";
-import * as Haptics from 'expo-haptics';
+import * as Haptics from "expo-haptics";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -43,46 +43,36 @@ export default function SearchObject() {
 
   const startStreaming = async () => {
     try {
-      if (cameraRef && ws) {
-        // Take picture with camera
-        let picture = await cameraRef.takePictureAsync();
-        // Resize image to YOLOv5 size (640x640)
-        const resizedPicture = await ImageManipulator.manipulateAsync(
-          picture.uri,
-          [{ resize: { width: 640, height: 640 } }],
-          { format: "jpeg" }
+      if (cameraRef.current && ws) {
+
+        let photo = await cameraRef.current.takePictureAsync({ base64: true });
+
+        // Resize the photo
+        let resizedPhoto = await ImageManipulator.manipulateAsync(
+          photo.uri,
+          [{ resize: { width: 320, height: 400} }],
+          {compress: 0.3, format: ImageManipulator.SaveFormat.JPEG, base64: true }
         );
-        console.log(resizedPicture);
-        // Convert image to base64 format
-        const response = await fetch(resizedPicture.uri);
-        const blob = await response.blob();
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = function () {
-          const base64data = reader.result.split(",")[1];
-          ws.send(JSON.stringify({ type: "image", data: base64data }));
-        };
+        ws.send(JSON.stringify({ type: "image", data: resizedPhoto.base64 }));
       }
+      // }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
   useEffect(() => {
     if (ws) {
-      const intervalId = setInterval(startStreaming, 400);
+      setInterval(startStreaming, 20);
       ws.onmessage = (event) => {
         const current_photo = JSON.parse(event.data).current_photo;
         const foundItem = JSON.parse(event.data).isItemFound;
         setItemFound(foundItem);
-        if (foundItem) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+        // if (foundItem) {
+        //   console.log(foundItem);
+        //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        // }
         setImageData(current_photo);
-      };
-
-      return () => {
-        clearInterval(intervalId); // Clear the interval when component unmounts
       };
     }
   }, [ws]);
@@ -98,17 +88,16 @@ export default function SearchObject() {
   return (
     <View style={styles.container}>
       <View style={{ display: "none" }}>
-        <Camera
-          type={cameraType}
-          style={{ flex: 1 }}
-          ref={(ref) => setCameraRef(ref)}
-        ></Camera>
+        <Camera type={cameraType} style={{ flex: 1 }} ref={cameraRef}></Camera>
       </View>
-<View style={styles.imageContainer}>
-<Image source={{ uri: 'data:image/jpeg;base64,${imageData}' }} style={styles.image} />
-</View>
-</View>
-);
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: `data:image/jpeg;base64,${imageData}` }}
+          style={styles.image}
+        />
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

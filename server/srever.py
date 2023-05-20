@@ -14,7 +14,7 @@ import io
 import threading
 from PIL import Image, ImageTk , ImageOps
 
-IP = "192.168.166.186"
+IP = "10.100.102.20"
 class name(BaseModel):
     firstName: str
 
@@ -87,7 +87,7 @@ class ImageWindow:
     def run(self):
         self.root.mainloop()
 
-# window = ImageWindow()
+window = ImageWindow()
 
 
 class RunServer:
@@ -105,12 +105,11 @@ class RunServer:
         async def websocket_handler(websocket: WebSocket,item:str):
             await websocket.accept()
 
-            window = ImageProcess(item,self.model)
+            ImageProcessCls = ImageProcess(item,self.model)
 
             while True:
                 try:
                     data = await websocket.receive_text()
-                    print(data)
                     data = json.loads(data)
                     response = None
                     image_data = base64.b64decode(data['data'])
@@ -118,10 +117,11 @@ class RunServer:
                     dataBytesIO = io.BytesIO(image_data)
                     image = Image.open(dataBytesIO)
                     # Display the image in the window
-                    window.analyze_photo(image)
+                    ImageProcessCls.analyze_photo(image)
+                    window.show_image(image)
                 # Send a response back to the client
-                    if window.current_photo and not isinstance(type(window.current_boxes), type(None)):
-                        image = window.current_photo
+                    if ImageProcessCls.current_photo and not isinstance(type(ImageProcessCls.current_boxes), type(None)):
+                        image = ImageProcessCls.current_photo
                         # Compress the image using Pillow-SIMD
                         compressed_image = ImageOps.exif_transpose(image)
                         compressed_image = compressed_image.convert('RGB')
@@ -133,7 +133,7 @@ class RunServer:
                         compressed_image_data = base64.b64encode(compressed_image_bytes.read()).decode('utf-8')
 
                         response = json.dumps({"current_photo": compressed_image_data,
-                                               "isItemFound":str(window.item_found).lower()})
+                                               "isItemFound":str(ImageProcessCls.item_found).lower()})
                     if not response:
                         response = json.dumps({"status": "ok"})
                     await websocket.send_text(response)
@@ -158,5 +158,6 @@ if __name__ == "__main__":
     absolute_model_path = os.path.join(repo_path, model_path)
     model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
     server_thread = threading.Thread(target=lambda:RunServer(model))
-
     server_thread.start()
+    window.run()
+
