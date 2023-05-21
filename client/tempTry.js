@@ -1,8 +1,9 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, Button } from "react-native";
+import { StyleSheet, Text, View, Image, Vibration } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Camera } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
+import { useRoute } from "@react-navigation/native";
 
 const IP = "172.20.29.94:8000";
 
@@ -10,8 +11,10 @@ export default function Try() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [ws, setWs] = useState(null);
-  const itemToSearch = "bottle";
+  // const [imageData, setImageData] = useState(null);
 
+  // const route = useRoute();
+  const itemToSearch = "bottle";
 
   useEffect(() => {
     (async () => {
@@ -29,8 +32,7 @@ export default function Try() {
     setWsConnection();
   }, []);
 
-
-  const takePicture = async () => {
+  const startStreaming = async () => {
     try {
       if (cameraRef) {
         const picture = await cameraRef.takePictureAsync({ base64: true });
@@ -53,8 +55,24 @@ export default function Try() {
   };
 
   useEffect(() => {
-    setInterval(takePicture, 400);
-  }, [hasPermission]);
+    if (ws) {
+      setInterval(startStreaming, 100);
+      ws.onmessage = (event) => {
+        const found = JSON.parse(event.data).isItemFound;
+        // const foundItem = JSON.parse(event.data).isItemFound;
+        // setItemFound(foundItem);
+        // if (foundItem) {
+        //   console.log(foundItem);
+        //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        // }
+        // setImageData(current_photo);
+      };
+    }
+  }, [ws]);
+
+  // useEffect(() => {
+  //   setInterval(takePicture, 400);
+  // }, [hasPermission]);
 
   if (hasPermission === null) {
     return <View />;
@@ -65,15 +83,18 @@ export default function Try() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Camera style={{ flex: 1 }} ref={(ref) => setCameraRef(ref)}>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "transparent",
-            flexDirection: "row",
-          }}
-        ></View>
-      </Camera>
+      {/* <View style={{ display: "none" }}> */}
+        <Camera style={{ flex: 1 }} ref={(ref) => setCameraRef(ref)}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "transparent",
+              flexDirection: "row",
+            }}
+          ></View>
+        </Camera>
+      {/* </View> */}
+      {/* <Image source={{ uri: `data:image/jpeg;base64,${imageData}` }} /> */}
       <StatusBar style="auto" />
     </View>
   );

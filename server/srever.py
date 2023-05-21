@@ -120,20 +120,19 @@ class RunServer:
                     ImageProcessCls.analyze_photo(image)
                     window.show_image(image)
                 # Send a response back to the client
-                    if ImageProcessCls.current_photo and not isinstance(type(ImageProcessCls.current_boxes), type(None)):
-                        image = ImageProcessCls.current_photo
-                        # Compress the image using Pillow-SIMD
-                        compressed_image = ImageOps.exif_transpose(image)
-                        compressed_image = compressed_image.convert('RGB')
-                        compressed_image_bytes = io.BytesIO()
-                        compressed_image.save(compressed_image_bytes, 'JPEG', quality=60)
-                        compressed_image_bytes.seek(0)
+                #     if ImageProcessCls.current_photo and not isinstance(type(ImageProcessCls.current_boxes), type(None)):
+                #         image = ImageProcessCls.current_photo
+                #         # Compress the image using Pillow-SIMD
+                #         compressed_image = ImageOps.exif_transpose(image)
+                #         compressed_image = compressed_image.convert('RGB')
+                #         compressed_image_bytes = io.BytesIO()
+                #         compressed_image.save(compressed_image_bytes, 'JPEG', quality=60)
+                #         compressed_image_bytes.seek(0)
+                #
+                #         # Convert the compressed image data to a base64-encoded string
+                #         compressed_image_data = base64.b64encode(compressed_image_bytes.read()).decode('utf-8')
 
-                        # Convert the compressed image data to a base64-encoded string
-                        compressed_image_data = base64.b64encode(compressed_image_bytes.read()).decode('utf-8')
-
-                        response = json.dumps({"current_photo": compressed_image_data,
-                                               "isItemFound":str(ImageProcessCls.item_found).lower()})
+                    response = json.dumps({"isItemFound":str(ImageProcessCls.item_found).lower()})
                     if not response:
                         response = json.dumps({"status": "ok"})
                     await websocket.send_text(response)
