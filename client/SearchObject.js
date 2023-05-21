@@ -10,7 +10,7 @@ const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 const cameraType = Camera.Constants.Type.back;
 
-const IP = "10.100.102.20:8000";
+const IP = "172.20.29.94:8000";
 
 export default function SearchObject() {
   const [hasPermission, setHasPermission] = useState(null);
