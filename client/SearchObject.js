@@ -10,7 +10,7 @@ const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 const cameraType = Camera.Constants.Type.back;
 
-const IP = "172.20.29.94:8000";
+const IP = "10.100.102.20:8000";
 
 export default function SearchObject() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -51,7 +51,7 @@ export default function SearchObject() {
         let resizedPhoto = await ImageManipulator.manipulateAsync(
           photo.uri,
           [{ resize: { width: 320, height: 400} }],
-          {compress: 0.3, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+          {compress: 0.4, format: ImageManipulator.SaveFormat.JPEG, base64: true }
         );
         ws.send(JSON.stringify({ type: "image", data: resizedPhoto.base64 }));
       }
