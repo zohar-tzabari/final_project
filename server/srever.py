@@ -14,7 +14,7 @@ from PIL import Image, ImageTk, ImageOps
 
 from model_handler import LocalModel, ImportedModel, YoloModel
 
-IP = "10.100.102.20"
+IP = "192.168.189.186"
 
 
 class name(BaseModel):

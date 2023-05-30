@@ -3,14 +3,17 @@ import { StyleSheet, Text, View, Button } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Camera } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
+import * as Haptics from "expo-haptics";
+import { useRoute } from "@react-navigation/native";
 
-const IP = "172.20.29.94:8000";
+const IP = "192.168.189.186:8000";
 
 export default function Try() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [ws, setWs] = useState(null);
-  const itemToSearch = "bottle";
+  const route = useRoute();
+  const itemToSearch = route.params.item;
 
 
   useEffect(() => {
@@ -53,8 +56,18 @@ export default function Try() {
   };
 
   useEffect(() => {
-    setInterval(takePicture, 400);
-  }, [hasPermission]);
+    if (ws) {
+      setInterval(takePicture, 200);
+      ws.onmessage = (event) => {
+        const foundItem = JSON.parse(event.data).isItemFound;
+        if (foundItem) {
+          console.log("found");
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+        //setImageData(current_photo);
+      };
+    }
+  }, [ws]);
 
   if (hasPermission === null) {
     return <View />;
