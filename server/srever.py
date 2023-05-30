@@ -1,24 +1,17 @@
-import json
-import base64
-from pathlib import Path
-import torch
-from PIL import ImageDraw
+from model_handler import LocalModel, ImportedModel, YoloModel
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
-from pydantic import BaseModel
-import tkinter as tk
-import io
-import threading
 from PIL import Image, ImageTk, ImageOps
+from PIL import ImageDraw
+from pathlib import Path
+import tkinter as tk
+import threading
+import uvicorn
+import base64
+import json
+import io
 
-from model_handler import LocalModel, ImportedModel, YoloModel
-
-IP = "192.168.189.186"
-
-
-class name(BaseModel):
-    firstName: str
+IP = "10.100.102.20"
 
 
 class ImageProcess:
@@ -77,8 +70,6 @@ class ImageWindow:
     def run(self):
         self.root.mainloop()
 
-
-window = ImageWindow()
 
 
 class ModelManager:
@@ -160,11 +151,7 @@ class RunServer:
 
 
 if __name__ == "__main__":
-    # model_path = "runs/train/exp4/weights/last.pt"
-    # repo_path = pathlib.Path(os.getcwd()).parent
-    # absolute_model_path = os.path.join(repo_path, model_path)
-    # model = torch.hub.load('ultralytics/yolov5', 'custom',
-    #                             path=absolute_model_path, force_reload=True)
+    window = ImageWindow()
     server_thread = threading.Thread(target=lambda: RunServer())
     server_thread.start()
     window.run()

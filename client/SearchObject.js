@@ -66,12 +66,12 @@ export default function SearchObject() {
       setInterval(startStreaming, 20);
       ws.onmessage = (event) => {
         const current_photo = JSON.parse(event.data).current_photo;
-        const foundItem = JSON.parse(event.data).isItemFound;
+        const foundItem = JSON.parse(JSON.parse(event.data).isItemFound);
         setItemFound(foundItem);
-        // if (foundItem) {
-        //   console.log(foundItem);
-        //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        // }
+        if (foundItem) {
+          console.log(foundItem);
+          // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
         setImageData(current_photo);
       };
     }

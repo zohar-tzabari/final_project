@@ -6,7 +6,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as Haptics from "expo-haptics";
 import { useRoute } from "@react-navigation/native";
 
-const IP = "192.168.189.186:8000";
+const IP = "10.100.102.20:8000";
 
 export default function Try() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -48,7 +48,6 @@ export default function Try() {
           }
         );
         ws.send(JSON.stringify({ type: "image", data: resizedPhoto.base64 }));
-        console.log("ok"); // Handle the taken photo as per your requirement
       }
     } catch (error) {
       console.log(error);
@@ -59,7 +58,7 @@ export default function Try() {
     if (ws) {
       setInterval(takePicture, 200);
       ws.onmessage = (event) => {
-        const foundItem = JSON.parse(event.data).isItemFound;
+        const foundItem = JSON.parse(JSON.parse(event.data).isItemFound);
         if (foundItem) {
           console.log("found");
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
