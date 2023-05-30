@@ -35,10 +35,6 @@ class ImportedModel(YoloModel):
     def analyze_photo(self, image_data, item=None) -> list:
         results = self.model([image_data])
         boxes = results.xyxy[0]
-        for i in boxes:
-            print(results.names[int(i[5])])
-        print(boxes)
-        print(item)
         filtered_boxes = list(filter(lambda box: results.names[int(box[5])] == item, boxes))
         return filtered_boxes
 
