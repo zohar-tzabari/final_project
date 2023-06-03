@@ -6,7 +6,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as Haptics from "expo-haptics";
 import { useRoute } from "@react-navigation/native";
 
-const IP = "10.100.102.20:8000";
+const IP = "10.140.3.11:8000";
 
 export default function Try() {
   const [hasPermission, setHasPermission] = useState(null);

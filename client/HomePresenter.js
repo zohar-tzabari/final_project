@@ -25,7 +25,7 @@ const HomePresenter = ({ handleButtonPress, handleButtonHover }) => {
 <View style={styles.container}>
       <View style={styles.row}>
         {createButton("key", require("./assets/key.png"))}
-        {createButton("glasses", require("./assets/glasses.png"))}
+        {createButton("coin", require("./assets/coin.png"))}
       </View>
 
       <View style={styles.row}>

@@ -19,7 +19,7 @@ const HomeContainer = ({ navigation }) => {
         key: require('./assets/sounds/key.mp3'),
         fork: require('./assets/sounds/fork.mp3'),
         spoon: require('./assets/sounds/spoon.mp3'),
-        glasses: require('./assets/sounds/glasses.mp3'),
+        glasses: require('./assets/sounds/coin.mp3'),
         bottle: require('./assets/sounds/bottle.mp3'),
         toothbrush: require('./assets/sounds/toothbrush.mp3'),
       };
