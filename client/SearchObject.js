@@ -1,34 +1,25 @@
-import { Camera } from "expo-camera";
-import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, Text, View, Image } from "react-native";
 import * as ImageManipulator from "expo-image-manipulator";
-import { Dimensions } from "react-native";
-import { useRoute } from '@react-navigation/native';
+import { useRoute } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
+import { Camera } from "expo-camera";
 
-
-const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
-const cameraType = Camera.Constants.Type.back;
 
 const IP = "10.100.102.20:8000";
 
 export default function SearchObject() {
   const [hasPermission, setHasPermission] = useState(null);
+  const [cameraRef, setCameraRef] = useState(null);
   const [ws, setWs] = useState(null);
-  const [imageData, setImageData] = useState(null);
-  const [itemFound,setItemFound] = useState(false);
   const route = useRoute();
-  const  itemToSearch = route.params.item;
-
-
-  const cameraRef = useRef(null);
+  const itemToSearch = route.params.item;
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === "granted");
-      console.log(windowWidth);
-      console.log(windowHeight);
     })();
   }, []);
 
@@ -39,107 +30,62 @@ export default function SearchObject() {
       setWs(newWs);
     }
     setWsConnection();
-  }, []);
+  }, [itemToSearch]);
 
-  const startStreaming = async () => {
+  const takePicture = async () => {
     try {
-      if (cameraRef.current && ws) {
-        // Take picture with camera
-        const picture = await cameraRef.current.takePictureAsync();
-
-        // Resize image to YOLOv5 size (640x640)
-        const resizedPicture = await ImageManipulator.manipulateAsync(
+      if (cameraRef) {
+        const picture = await cameraRef.takePictureAsync({ base64: true });
+        // Resize the photo
+        let resizedPhoto = await ImageManipulator.manipulateAsync(
           picture.uri,
-          [{ resize: { width: 640, height: 640 } }],
-          { format: "jpeg" }
+          [{ resize: { width: 320, height: 400 } }],
+          {
+            compress: 0.3,
+            format: ImageManipulator.SaveFormat.JPEG,
+            base64: true,
+          }
         );
-
-        // Convert image to base64 format
-        const response = await fetch(resizedPicture.uri);
-        const blob = await response.blob();
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = function () {
-          const base64data = reader.result.split(",")[1];
-          ws.send(JSON.stringify({ type: "image", data: base64data }));
-        };
+        ws.send(JSON.stringify({ type: "image", data: resizedPhoto.base64 }));
       }
     } catch (error) {
+      // console.log(error);
     }
   };
 
   useEffect(() => {
     if (ws) {
-      setInterval(startStreaming, 400);
+      setInterval(takePicture, 10);
       ws.onmessage = (event) => {
-        const current_photo = JSON.parse(event.data).current_photo;
-        const foundItem = JSON.parse(event.data).isItemFound;
-        setItemFound(foundItem);
-        if (foundItem)
-        {
-          //make vibrate
+        const foundItem = JSON.parse(JSON.parse(event.data).isItemFound);
+        if (foundItem) {
+          // console.log("found");
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         }
-        setImageData(current_photo);
+        //setImageData(current_photo);
       };
     }
-  }, [ws]);
+  }, [ws,itemToSearch]);
 
   if (hasPermission === null) {
     return <View />;
   }
-
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
 
-
   return (
-    <View style={styles.container}>
-      <View style={{ display: "none" }}>
-        <Camera type={cameraType} ref={cameraRef}>
-        </Camera>
-      </View>
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: `data:image/jpeg;base64,${imageData}` }}
-          style={styles.image}
-        />
-      </View>
+    <View style={{ flex: 1 }}>
+      <Camera style={{ flex: 1 }} ref={(ref) => setCameraRef(ref)}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "transparent",
+            flexDirection: "row",
+          }}
+        ></View>
+      </Camera>
+      <StatusBar style="auto" />
     </View>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#E7E7F7", // modified to black
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  imageContainer: {
-    flex: 1,
-    width: "100%",
-  },
-  imageContainer: {
-    flex: 1,
-    width: "100%",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  image: {
-    width: windowWidth,
-    height: windowHeight,
-    resizeMode: "contain",
-    borderRadius: 10,
-  },
-});
