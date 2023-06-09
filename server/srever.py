@@ -11,7 +11,7 @@ import base64
 import json
 import io
 
-IP = "10.140.3.11"
+IP = "10.100.102.20"
 
 
 class ImageProcess:
